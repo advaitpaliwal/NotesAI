@@ -5,7 +5,6 @@ import os
 from gensim.models import KeyedVectors
 import numpy as np
 from nltk.corpus import stopwords
-from sklearn.feature_extraction.text import TfidfVectorizer
 import string
 import math
 from scipy import spatial
@@ -22,7 +21,7 @@ class text_segmentation_class:
         self.distances= None
         self.avg_dist= None
         self.seg_text = None
-
+        self.seg_boundary = []
         self.stop_words = set(stopwords.words('english'))
         self.glove_file = glove_file
         self.file_name = file_name
@@ -278,9 +277,5 @@ class text_segmentation_class:
         return res
 
 
-if __name__ == '__main__':
-    text_segment = TextSegmenter()
-    text_segment.display_text('transcript.txt')
-    text_segment.load_embeddings('embeddings.txt')
-    text_segment.load_vocabulary('vocabulary.txt')
-    text_segment.load_entropy('entropy.txt')
+seg = text_segmentation_class('transcript.txt', 'glove.6B.300d.txt')
+print(seg.get_segment_texts())
