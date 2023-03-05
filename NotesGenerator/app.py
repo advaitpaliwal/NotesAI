@@ -60,7 +60,6 @@ def main():
                 st.write(f"Topics extracted from {url}:")
                 st.plotly_chart(ts.plot_topics(topics))
                 st.write(f"Notes extracted from {url}:")
-
                 if notes is not None:
                     for note in notes:
                         time.sleep(0.1)
@@ -82,6 +81,10 @@ def main():
                                 print(n)
                         if flag:
                             st.write('# Error getting this chapter')
+        
+        st.write("# ('U') === End of Chapters === ('U')")
+            
+>>>>>>> 8db1835ec563561d266731579f962fb20188536a
 
                 st.write("# ('U') === End of Chapters === ('U')")
 
