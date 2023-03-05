@@ -77,27 +77,30 @@ class CorpusGrabber:
         """
         Takes a URL to a .pdf file and returns the text.
         """
-        try:
-            response = requests.get(url)
-            response.raise_for_status()
+        # try:
+        response = requests.get(url)
+        response.raise_for_status()
 
-            file_name = "document.pdf"
-            with open(file_name, "wb") as f:
-                f.write(response.content)
+        file_name = "document.pdf"
+        with open(file_name, "wb") as f:
+            f.write(response.content)
 
-            all_text = []
-            with open(file_name, "rb") as f:
-                pdf_reader = PyPDF2.PdfFileReader(f)
-                num_pages = pdf_reader.getNumPages()
+        all_text = []
+        with open(file_name, "rb") as f:
+            pdf_reader = PyPDF2.PdfReader(f)
+            print(pdf_reader)
+            num_pages = len(list(pdf_reader.pages))
 
-                for i in range(num_pages):
-                    page = pdf_reader.getPage(i)
-                    text = page.extractText()
-                    all_text.append(text.strip())
-            return " ".join(all_text)
-        except (requests.exceptions.InvalidURL, requests.exceptions.HTTPError):
-            print("Error: Invalid or inaccessible URL. Please try again.")
-            return False
-        except Exception as e:
-            print("Error:", e)
-            return False
+            for i in range(num_pages):
+                # page = pdf_reader.getPage(i)
+                page = pdf_reader.pages[i]
+                # text = page.extractText()
+                text = page.extract_text()
+                all_text.append(text.strip())
+        return " ".join(all_text)
+        # except (requests.exceptions.InvalidURL, requests.exceptions.HTTPError):
+        #     print("Error: Invalid or inaccessible URL. Please try again.")
+        #     return False
+        # except Exception as e:
+        #     print("Error:", e)
+        #     return False
