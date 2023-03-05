@@ -19,7 +19,7 @@ def get_environment_variable(variable_name):
     load_dotenv()
     return os.getenv(variable_name)
 
-openai.api_key = get_environment_variable("openai.api_key")
+openai.api_key = get_environment_variable("OPENAI_API_KEY")
 
 class TextSegmenter:
     def __init__(self, split_method="spacey"):
