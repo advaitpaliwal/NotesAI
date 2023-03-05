@@ -101,7 +101,6 @@ def main():
                     print(n)
             if flag:
                 st.write('# Error getting this chapter')
-            # st.write(ts.get_notes(note) + "\n\n===\n\n")
         
         st.write("# ('U') === End of Chapters === ('U')")
             
