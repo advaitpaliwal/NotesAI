@@ -2,10 +2,12 @@ import streamlit as st
 from corpus_grabber import CorpusGrabber
 from text_segmenter import TextSegmenter
 import time
+from streamlit_player import st_player
 
 
 def main():
     st.title("Notes AI")
+    notes = None
 
     # Initialize CorpusGrabber and TextSegmenter
     cg = CorpusGrabber()
@@ -16,26 +18,29 @@ def main():
     file_input_placeholder = st.empty()
 
     # Get input type from user
-    input_type = st.selectbox("Select input type", ["URL", "File"])
+    input_type = st.selectbox("Select input type", ["Youtube URL", "File"])
 
     # Show appropriate input component based on selection
-    if input_type == "URL":
+    if input_type == "Youtube URL":
         # Remove file input component
         file_input_placeholder.empty()
 
         # Show URL input component
         url = url_input_placeholder.text_input("Enter YouTube URL:")
         if st.button('Extract Topics'):
+            st.write('Getting topics, please be *very* patient :)')
             corpus = cg.get_text(url)
+            st.write('Dont worry, still getting them...')
             topics = ts.extract_topics(corpus)
             st.write(f"Topics extracted from {url}:")
             st.plotly_chart(ts.plot_topics(topics))
-        if st.button("Get Text"):
+        if st.button("Get Notes"):
+            st_player(url)
+            st.write('Getting notes, please be *very* patient :)')
             corpus = cg.get_text(url)
+            st.write('Dont worry, still getting them...')
             notes = ts.segment_text(corpus, plot=True)
             st.write(f"Text segments extracted from {url}:")
-            for i, note in enumerate(notes):
-                st.write(f"{i + 1}. {note}")
 
     elif input_type == "File":
         # Remove URL input component
@@ -64,7 +69,8 @@ def main():
                 st.write("PowerPoint processing coming soon!")
             elif file_type == "pdf":
                 st.write("PDF processing coming soon!")
-                
+
+    if notes is not None:
         for note in notes:
             time.sleep(0.1)
             max_retries = 3
@@ -87,7 +93,7 @@ def main():
                 st.write('# Error getting this chapter')
             # st.write(ts.get_notes(note) + "\n\n===\n\n")
         
-        st.write('===')
+        st.write("# ('U') === End of Chapters === ('U')")
             
 
 

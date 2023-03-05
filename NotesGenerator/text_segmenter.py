@@ -13,7 +13,7 @@ import plotly.express as px
 import pandas as pd
 
 import openai
-openai.api_key = ''
+openai.api_key = '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'
 
 
 class TextSegmenter:
@@ -33,16 +33,8 @@ class TextSegmenter:
         return eval(match.group(1))
 
     def get_notes(self, segment):
-        # prompt = f'''You are an intelligent chatbot that creates concise notes based on plain text. Your notes should include relevant and non vague information.
 
-        #             Here is a part of the text:
-        #             {segment}
-
-        #             Generate notes based on this segment. Your response should be in JSON format 
-        #             with heading as the key and a list of bullet points as value.
-        #             '''
-
-        prompt = 'without losing information, summarize the following with a heading and bulleted notes:\n'+segment+'\n give your summary in the following JSON format:{"heading": heading, "summary": [bullet contents, bullet contents]}'
+        prompt = 'without losing information, summarize the following with a heading and bulleted notes:\n'+segment+'\n Give your summary in the following JSON format:{"heading": heading, "summary": [bullet contents, bullet contents]}'
 
         try:
             response = openai.Completion.create(
@@ -51,23 +43,9 @@ class TextSegmenter:
                 max_tokens=256,
                 n=1,
             )
-            # yield self.text_to_json(response["choices"][0]["text"].strip())
-            # return self.text_to_json(response["choices"][0]["text"].strip())
             return response["choices"][0]["text"].strip()
-
         except:
-            try:
-                response = openai.ChatCompletion.create(
-                    model="davinci",
-                    prompt=prompt,
-                    max_tokens=256,
-                    n=1,
-                )
-                # yield self.text_to_json(response["choices"][0]["message"]["content"])
-                # return self.text_to_json(response["choices"][0]["text"].strip())
-                return response["choices"][0]["text"].strip()
-            except Exception as e:
-                raise Exception(e)
+            return None
 
     def get_segments(self, corpus):
         global segments
@@ -115,7 +93,7 @@ class TextSegmenter:
 
     def find_peaks_in_similarity(self, sim):
         peaks, _ = find_peaks(np.asarray(sim[:-1]) * -1,
-                              prominence=0.1)
+                              prominence=0.1, width=2)
         return peaks
 
     def plot_similarity(self, vid, peaks):
@@ -148,8 +126,6 @@ class TextSegmenter:
             " ".join(df["segment"].values) for df in dfs
         ]
         return segmented_by_similarity_change
-        # for segment in segmented_by_similarity_change:
-        #     yield from self.get_notes(segment)
 
     def extract_topics(self, text, num_topics=5, num_words=5):
         text_data = text.split('.')
