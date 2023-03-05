@@ -1,4 +1,5 @@
-# NotesSpace
+![logo](https://github.com/advaitpaliwal/NotesAI/blob/main/NotesSpace/logo.png?raw=true)
+
 NotesSpace is a user-friendly web application designed for efficient note-taking. It enables you to input YouTube or file URLs and generates notes for you. The primary code for this application can be found in the NotesSpace folder, while the contents of the test folder were used for project experimentation.
 
 ## Key Files
