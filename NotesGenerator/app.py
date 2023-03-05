@@ -56,7 +56,15 @@ def main():
                 st.write(f"Text segments extracted from {uploaded_file.name}:")
                 # for i, note in enumerate(notes):
                 #     st.write(f"{i + 1}. {note}")
-
+            elif file_type == "mp3":
+                st.write("Audio processing coming soon!")
+            elif file_type == "mp4":
+                st.write("Video processing coming soon!")
+            elif file_type == "pptx":
+                st.write("PowerPoint processing coming soon!")
+            elif file_type == "pdf":
+                st.write("PDF processing coming soon!")
+                
         for note in notes:
             time.sleep(0.1)
             max_retries = 3
@@ -80,14 +88,7 @@ def main():
             # st.write(ts.get_notes(note) + "\n\n===\n\n")
         
         st.write('===')
-            elif file_type == "mp3":
-                st.write("Audio processing coming soon!")
-            elif file_type == "mp4":
-                st.write("Video processing coming soon!")
-            elif file_type == "pptx":
-                st.write("PowerPoint processing coming soon!")
-            elif file_type == "pdf":
-                st.write("PDF processing coming soon!")
+            
 
 
 if __name__ == "__main__":
