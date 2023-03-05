@@ -21,5 +21,3 @@ To run NotesSpace on your local machine, follow these simple steps:
 <a href="https://github.com/advaitpaliwal/NotesAI/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=advaitpaliwal/NotesAI" />
 </a>
-
-Made with [contrib.rocks](https://contrib.rocks).
