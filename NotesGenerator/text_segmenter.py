@@ -1,3 +1,5 @@
+import re
+
 import pandas as pd
 from scipy.signal import find_peaks
 import numpy as np
@@ -17,15 +19,17 @@ class TextSegmenter:
         elif split_method == "nnsplit":
             from nnsplit import NNSplit
             self.split_model = NNSplit.load("en")
-
+    def text_to_json(self, json_string):
+        match = re.search("({.*})", json_string)
+        return eval(match.group(1))
     def get_notes(self, segment):
-        format = "[heading, bullet1, bullet2, ...]"
         prompt = f'''You are an intelligent chatbot that creates concise notes based on plain text. Your notes should include relevant and non vague information.
 
                     Here is a part of the text:
                     {segment}
 
-                    Generate notes based on this segment in the format of a python list like so: {format}.
+                    Generate notes based on this segment. Your response should be in JSON format 
+                    with heading as the key and a list of bullet points as value.
                     '''
         try:
             response = openai.Completion.create(
@@ -34,7 +38,7 @@ class TextSegmenter:
                 max_tokens=256,
                 n=1,
             )
-            yield response["choices"][0]["text"].strip()
+            yield self.text_to_json(response["choices"][0]["text"].strip())
 
         except:
             try:
@@ -44,7 +48,7 @@ class TextSegmenter:
                     max_tokens=256,
                     n=1,
                 )
-                yield response["choices"][0]["message"]["content"]
+                yield self.text_to_json(response["choices"][0]["message"]["content"])
             except:
                 raise Exception("Rate limit reached")
 
@@ -94,8 +98,7 @@ class TextSegmenter:
 
     def find_peaks_in_similarity(self, sim):
         peaks, _ = find_peaks(np.asarray(sim[:-1]) * -1,
-                              prominence=0.5,
-                              width=2)
+                              prominence=0.1)
         return peaks
 
     def plot_similarity(self, vid, peaks):
@@ -124,5 +127,6 @@ class TextSegmenter:
         segmented_by_similarity_change = [
             " ".join(df["segment"].values) for df in dfs
         ]
-        for segment in segmented_by_similarity_change:
-            yield from self.get_notes(segment)
+        return segmented_by_similarity_change
+        # for segment in segmented_by_similarity_change:
+        #     yield from self.get_notes(segment)

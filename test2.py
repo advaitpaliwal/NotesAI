@@ -1,25 +1,37 @@
-import concurrent.futures
+import gensim
+from gensim import corpora
+from gensim.models.ldamodel import LdaModel
 
-def get_embedding(text, model="text-embedding-ada-002", max_retries=3):
-    text = text.replace("\n", " ")
-    for i in range(max_retries):
-        try:
-            embedding = openai.Embedding.create(input=[text], model=model)['data'][0]['embedding']
-            return embedding
-        except Exception as e:
-            print(f"Error: {e}")
-            if i == max_retries - 1:
-                raise e
+# Load the transcript text file
+with open('transcript.txt', 'r') as file:
+    text = file.read()
 
-def get_embeddings(texts):
-    embeddings = []
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        futures = [executor.submit(get_embedding, text) for text in texts]
-        for future in concurrent.futures.as_completed(futures):
-            try:
-                embedding = future.result()
-            except Exception as e:
-                print(f"Error: {e}")
-            else:
-                embeddings.append(embedding)
-    return embeddings
+# Preprocess the text by tokenizing and removing stop words
+tokenized_text = gensim.utils.simple_preprocess(text, deacc=True, min_len=2, max_len=15)
+stop_words = gensim.parsing.preprocessing.STOPWORDS
+tokenized_text = [word for word in tokenized_text if word not in stop_words]
+
+# Create a dictionary from the tokenized text
+dictionary = corpora.Dictionary([tokenized_text])
+
+# Convert tokenized text to vectors
+corpus = [dictionary.doc2bow([word]) for word in tokenized_text]
+
+# Train the LDA model
+lda_model = LdaModel(corpus=corpus,
+                     id2word=dictionary,
+                     num_topics=3,
+                     passes=10,
+                     alpha='auto',
+                     eta='auto')
+
+# Print the topics and their corresponding words
+for topic in lda_model.print_topics():
+    print(f"Topic {topic[0]}: {topic[1]}")
+
+# Segment the text based on topics
+topics = lda_model.get_document_topics(corpus)
+for i, doc in enumerate(topics):
+    print(f"Document {i+1}: Topic {doc[0][0]}")
+    print(text.split('.')[i])
+    print("\n")

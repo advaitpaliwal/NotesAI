@@ -16,7 +16,7 @@ def main():
     # Get text from URL using CorpusGrabber
     if st.button("Get Text"):
         corpus = cg.get_text(url)
-        notes = ts.segment_text(corpus)
+        notes = ts.segment_text(corpus, plot=True)
         st.write("Text segments:")
         for i, note in enumerate(notes):
             st.write(f"{i + 1}. {note}")
