@@ -8,7 +8,7 @@ from sentence_transformers import SentenceTransformer
 from sentence_transformers.util import cos_sim
 import concurrent.futures
 import openai
-openai.api_key = "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"
+openai.api_key ='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'
 class TextSegmenter:
     def __init__(self, split_method="spacey"):
         self.embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -20,17 +20,21 @@ class TextSegmenter:
             from nnsplit import NNSplit
             self.split_model = NNSplit.load("en")
     def text_to_json(self, json_string):
+        json_string = json_string.replace("\n", '')
         match = re.search("({.*})", json_string)
         return eval(match.group(1))
     def get_notes(self, segment):
-        prompt = f'''You are an intelligent chatbot that creates concise notes based on plain text. Your notes should include relevant and non vague information.
+        # prompt = f'''You are an intelligent chatbot that creates concise notes based on plain text. Your notes should include relevant and non vague information.
 
-                    Here is a part of the text:
-                    {segment}
+        #             Here is a part of the text:
+        #             {segment}
 
-                    Generate notes based on this segment. Your response should be in JSON format 
-                    with heading as the key and a list of bullet points as value.
-                    '''
+        #             Generate notes based on this segment. Your response should be in JSON format 
+        #             with heading as the key and a list of bullet points as value.
+        #             '''
+
+        prompt = 'without losing information, summarize the following with a heading and bulleted notes:\n'+segment+'\n give your summary in the following JSON format:{"heading": heading, "summary": [bullet contents, bullet contents]}'
+
         try:
             response = openai.Completion.create(
                 engine="text-davinci-003",
@@ -38,7 +42,9 @@ class TextSegmenter:
                 max_tokens=256,
                 n=1,
             )
-            yield self.text_to_json(response["choices"][0]["text"].strip())
+            # yield self.text_to_json(response["choices"][0]["text"].strip())
+            # return self.text_to_json(response["choices"][0]["text"].strip())
+            return response["choices"][0]["text"].strip()
 
         except:
             try:
@@ -48,14 +54,15 @@ class TextSegmenter:
                     max_tokens=256,
                     n=1,
                 )
-                yield self.text_to_json(response["choices"][0]["message"]["content"])
-            except:
-                raise Exception("Rate limit reached")
+                # yield self.text_to_json(response["choices"][0]["message"]["content"])
+                # return self.text_to_json(response["choices"][0]["text"].strip())
+                return response["choices"][0]["text"].strip()
+            except Exception as e:
+                raise Exception(e)
 
     def get_segments(self, corpus):
         global segments
         if self.split_method == "spacey":
-            print(corpus)
             doc = self.split_model(corpus)
             segments = [sent.text for sent in doc.sents]
         elif self.split_method == "nnsplit":
@@ -114,6 +121,9 @@ class TextSegmenter:
         segments = self.get_segments(corpus)
         embeddings = self.get_embeddings(segments)
         sim = self.measure_similarity(embeddings)
+        print(len(segments))
+        print(len(embeddings))
+        print(len(sim))
         vid = pd.DataFrame(
             {"segment": segments, "embedding": embeddings, "similarity": sim}
         )
