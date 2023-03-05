@@ -7,26 +7,35 @@ from streamlit_player import st_player
 
 def main():
     st.title("Notes AI")
+    st.write('''
+            # How to use
+            (1) Choose where you want to add text from\n
+            (2) Upload file or add link (direct link to youtube video, pptx or pdf file)\n
+            (2) Use "Extract Topics" and "Get Notes" Buttons to get notes and topics!\n
+            That's it :)\n\n\n
+            ### Now Go ahead:
+        ''')
     notes = None
 
     # Initialize CorpusGrabber and TextSegmenter
     cg = CorpusGrabber()
     ts = TextSegmenter()
 
+    # Get input type from user
+    input_type = st.selectbox("(1) Select input type:", ["URL", "File"])
+
     # Create placeholders for input components
     url_input_placeholder = st.empty()
     file_input_placeholder = st.empty()
 
-    # Get input type from user
-    input_type = st.selectbox("Select input type", ["Youtube URL", "File"])
 
     # Show appropriate input component based on selection
-    if input_type == "Youtube URL":
+    if input_type == "URL":
         # Remove file input component
         file_input_placeholder.empty()
 
         # Show URL input component
-        url = url_input_placeholder.text_input("Enter YouTube URL:")
+        url = url_input_placeholder.text_input("(2) Enter URL for youtube video or a URL that ends with .pptx/.pdf:")
         if st.button('Extract Topics'):
             st.write('Getting topics, please be *very* patient :)')
             corpus = cg.get_text(url)
@@ -47,7 +56,7 @@ def main():
         url_input_placeholder.empty()
 
         # Show file input component
-        uploaded_file = file_input_placeholder.file_uploader("Choose a file", type=["txt", "mp3", "mp4", "pptx", "pdf"],
+        uploaded_file = file_input_placeholder.file_uploader("(2) Choose a file:", type=["txt", "mp3", "mp4", "pptx", "pdf"],
                                                              accept_multiple_files=False)
 
         if uploaded_file:
