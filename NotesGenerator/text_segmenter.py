@@ -65,6 +65,7 @@ class TextSegmenter:
     def get_segments(self, corpus):
         global segments
         if self.split_method == "spacey":
+            print(corpus)
             doc = self.split_model(corpus)
             segments = [sent.text for sent in doc.sents]
         elif self.split_method == "nnsplit":
