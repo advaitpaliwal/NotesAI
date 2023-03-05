@@ -1,14 +1,22 @@
 import re
 
-import pandas as pd
+from gensim.models import LdaMulticore
 from scipy.signal import find_peaks
 import numpy as np
 import matplotlib.pyplot as plt
 from sentence_transformers import SentenceTransformer
 from sentence_transformers.util import cos_sim
 import concurrent.futures
+import gensim
+from gensim import corpora
+import plotly.express as px
+import pandas as pd
+
 import openai
+
 openai.api_key = "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"
+
+
 class TextSegmenter:
     def __init__(self, split_method="spacey"):
         self.embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -19,9 +27,11 @@ class TextSegmenter:
         elif split_method == "nnsplit":
             from nnsplit import NNSplit
             self.split_model = NNSplit.load("en")
+
     def text_to_json(self, json_string):
         match = re.search("({.*})", json_string)
         return eval(match.group(1))
+
     def get_notes(self, segment):
         prompt = f'''You are an intelligent chatbot that creates concise notes based on plain text. Your notes should include relevant and non vague information.
 
@@ -58,7 +68,7 @@ class TextSegmenter:
             doc = self.split_model(corpus)
             segments = [sent.text for sent in doc.sents]
         elif self.split_method == "nnsplit":
-            splits = self.split_model.split([corpus],)[0]
+            splits = self.split_model.split([corpus], )[0]
             segments = [str(sentence) for sentence in splits]
         filtered_segments = []
         for segment in segments:
@@ -130,3 +140,32 @@ class TextSegmenter:
         return segmented_by_similarity_change
         # for segment in segmented_by_similarity_change:
         #     yield from self.get_notes(segment)
+
+    def extract_topics(self, text, num_topics=5, num_words=5):
+        text_data = text.split('.')
+        # Tokenize the text data
+        tokenized_text = [gensim.utils.simple_preprocess(sentence) for sentence in text_data]
+
+        # Remove stop words
+        stop_words = gensim.parsing.preprocessing.STOPWORDS
+        tokenized_text = [[word for word in sentence if word not in stop_words] for sentence in tokenized_text]
+
+        # Create a dictionary of the tokenized text data
+        dictionary = corpora.Dictionary(tokenized_text)
+
+        # Create a bag-of-words representation of the text data
+        bow_corpus = [dictionary.doc2bow(text) for text in tokenized_text]
+
+        # Train an LDA model on the bag-of-words corpus
+        lda_model = LdaMulticore(bow_corpus, num_topics=2, id2word=dictionary, passes=10, workers=2)
+
+        # Extract the major topics from the text data
+        topics = lda_model.show_topics(num_topics=-1, formatted=False)
+        return topics
+
+    def plot_topics(self, topics):
+        # create a list of all the words in the topics
+        for topic in topics:
+            df = pd.DataFrame(topic[1], columns=['word', 'freq'])
+            fig = px.scatter(df, x='word', y='freq', size='freq', title=f'Topic {topic[0]}')
+            return fig
