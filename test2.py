@@ -1,37 +1,36 @@
 import gensim
 from gensim import corpora
-from gensim.models.ldamodel import LdaModel
+from gensim.models.lsimodel import LsiModel
+import plotly.express as px
+import pandas as pd
 
-# Load the transcript text file
 with open('transcript.txt', 'r') as file:
-    text = file.read()
+    text_data = file.read()
 
-# Preprocess the text by tokenizing and removing stop words
-tokenized_text = gensim.utils.simple_preprocess(text, deacc=True, min_len=2, max_len=15)
+#segment text into sentences
+text_data = text_data.split('.')
+print(text_data)
+# Tokenize the text data
+tokenized_text = [gensim.utils.simple_preprocess(sentence) for sentence in text_data]
+
+# Remove stop words
 stop_words = gensim.parsing.preprocessing.STOPWORDS
-tokenized_text = [word for word in tokenized_text if word not in stop_words]
+tokenized_text = [[word for word in sentence if word not in stop_words] for sentence in tokenized_text]
 
-# Create a dictionary from the tokenized text
-dictionary = corpora.Dictionary([tokenized_text])
+# Create a dictionary of the tokenized text data
+dictionary = corpora.Dictionary(tokenized_text)
 
-# Convert tokenized text to vectors
-corpus = [dictionary.doc2bow([word]) for word in tokenized_text]
+# Create a bag-of-words representation of the text data
+bow_corpus = [dictionary.doc2bow(text) for text in tokenized_text]
 
-# Train the LDA model
-lda_model = LdaModel(corpus=corpus,
-                     id2word=dictionary,
-                     num_topics=3,
-                     passes=10,
-                     alpha='auto',
-                     eta='auto')
+# Train an LSI model on the bag-of-words corpus
+lsi_model = LsiModel(bow_corpus, num_topics=2, id2word=dictionary)
 
-# Print the topics and their corresponding words
-for topic in lda_model.print_topics():
-    print(f"Topic {topic[0]}: {topic[1]}")
+# Extract the major topics from the text data
+topics = lsi_model.show_topics(num_topics=-1, formatted=False)
 
-# Segment the text based on topics
-topics = lda_model.get_document_topics(corpus)
-for i, doc in enumerate(topics):
-    print(f"Document {i+1}: Topic {doc[0][0]}")
-    print(text.split('.')[i])
-    print("\n")
+# Create a plotly scatter plot for each topic
+for topic in topics:
+    df = pd.DataFrame(topic[1], columns=['word', 'freq'])
+    fig = px.scatter(df, x='word', y='freq', size='freq', title=f'Topic {topic[0]}')
+    fig.show()
