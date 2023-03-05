@@ -6,7 +6,8 @@ from streamlit_player import st_player
 
 
 def main():
-    st.title("Notes AI")
+    # st.title("Notes AI")
+    st.image('logo.png')
     st.write('''
             # How to use
             (1) Choose where you want to add text from\n
