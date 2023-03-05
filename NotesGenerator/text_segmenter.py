@@ -153,5 +153,5 @@ class TextSegmenter:
         # create a list of all the words in the topics
         for topic in topics:
             df = pd.DataFrame(topic[1], columns=['word', 'freq'])
-            fig = px.scatter(df, x='word', y='freq', size='freq', title=f'Topic {topic[0]}')
+            fig = px.scatter(df, x='word', y='freq', size='freq', title=f'Topic Keywords')
             return fig

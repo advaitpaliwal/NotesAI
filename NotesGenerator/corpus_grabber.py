@@ -4,7 +4,6 @@ import PyPDF2
 from pptx import Presentation
 from youtube_transcript_api import YouTubeTranscriptApi
 
-
 class CorpusGrabber:
     """
     A class that retrieves text from a URL to a .pptx, .pdf or a YouTube video.
