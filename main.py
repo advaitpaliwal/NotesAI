@@ -1,5 +1,5 @@
-from NotesGenerator.TextSegmentation import TextSegmenter
-from NotesGenerator.CorpusGrabber import CorpusGrabber
+from NotesGenerator.text_segmenter import TextSegmenter
+from NotesGenerator.corpus_grabber import CorpusGrabber
 
 ts = TextSegmenter()
 cg = CorpusGrabber()

@@ -16,7 +16,7 @@ headers = {
     "origin": "https://frontend.eightify.app",
     "referer": "https://frontend.eightify.app/",
     "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.63"}
-video_url = "https://www.youtube.com/watch?v=bueBi2lOuAM"
+video_url = "https://www.youtube.com/watch?v=EQISygAle3M"
 data = {"refill": "100"}
 url = f"https://backend.eightify.app/key-ideas?video_id={extract_youtube_id(video_url)}&language=EN&auto_summary=false&source=summarize-button"
 url = "https://backend.eightify.app/balance"

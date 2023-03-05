@@ -1,48 +1,52 @@
 import pandas as pd
 from youtube_transcript_api import YouTubeTranscriptApi
-import nltk
 from scipy.signal import find_peaks
+import spacy
 import numpy as np
 import matplotlib.pyplot as plt
+from gensim.similarities import WmdSimilarity
 from sentence_transformers import SentenceTransformer
 
-def segment_video():
-    # load video
-    transcript = YouTubeTranscriptApi.get_transcript(str('IDDmrzzB14M').strip(), languages=['en', 'en-GB', 'en-US'])
+
+def segment_video(video_id):
+    # load video transcript
+    transcript = YouTubeTranscriptApi.get_transcript(video_id, languages=['en', 'en-GB', 'en-US'])
     corpus = ' '.join([t['text'] for t in transcript])
 
-    # splitting corpus into segments
-    nltk.download('punkt')
-    segments = nltk.sent_tokenize(corpus)
+    # segmenting transcript into smaller segments
+    nlp = spacy.load('en_core_web_sm')
+    doc = nlp(corpus)
+    segments = [sent.text for sent in doc.sents]
 
-    # encode all segments using SentenceTransformer
+    # generating embeddings for each segment
     model = SentenceTransformer('all-MiniLM-L6-v2')
-    embeddings = model.encode(segments)
+    segment_embeddings = model.encode(segments)
 
-    # calculate pairwise similarities between embeddings using matrix multiplication
-    sim = np.matmul(embeddings, embeddings.T)
+    # computing similarity between segments
+    wmd_instance = WmdSimilarity(segments, model)
+    similarity = []
+    for i in range(len(segments) - 1):
+        similarity.append(wmd_instance[segments[i]], [segments[i+1]])
 
-    # finding moments of big change in video
-    sim_flat = np.concatenate(sim[:-1])
-    peaks, _ = find_peaks(-sim_flat, prominence=0.1)
-    peaks_locs = pd.DataFrame({'segment': segments, 'embedding': embeddings, 'similarity': sim[:,0]}).iloc[peaks]
+    # finding moments of significant change in video
+    peaks, _ = find_peaks(np.asarray(similarity) * -1, prominence=0.1)
+    peaks_locs = pd.DataFrame({'segment': [segments[i] for i in peaks], 'embedding': [segment_embeddings[i] for i in peaks],
+                               'similarity': [similarity[i] for i in peaks]})
 
-    # in order to see how video is segmented, uncomment following code
+    # visualize segmentation
     plt.figure().set_figheight(2)
     plt.figure().set_figwidth(20)
+    plt.plot(similarity)
+    plt.ylim((0, 1))
     plt.plot(peaks, peaks_locs['similarity'], "x")
     plt.show()
 
-    # breaking up video transcript based on change in embedding score
-    dfs = []
+    # segmenting transcript based on similarity change
+    segmented_transcript = []
     last_check = 0
     for ind in peaks:
-        dfs.append(segments[last_check:ind])
+        segmented_transcript.append(' '.join(segments[last_check:ind]))
         last_check = ind
-    segmented_by_smiliarity_change = [' '.join(df) for df in dfs]
+    segmented_transcript.append(' '.join(segments[last_check:]))
 
-    return segmented_by_smiliarity_change
-
-
-if __name__ == '__main__':
-    print(segment_video())
+    return segmented_transcript
