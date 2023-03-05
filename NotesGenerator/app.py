@@ -83,10 +83,6 @@ def main():
                             st.write('# Error getting this chapter')
         
         st.write("# ('U') === End of Chapters === ('U')")
-            
->>>>>>> 8db1835ec563561d266731579f962fb20188536a
-
-                st.write("# ('U') === End of Chapters === ('U')")
 
 if __name__ == "__main__":
     main()
